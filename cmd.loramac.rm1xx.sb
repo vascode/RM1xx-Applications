@@ -498,6 +498,235 @@ function _Connect()
     exitfunc rc
   endif
 endfunc BleConnect(s$[1],i[1],i[2],i[3],i[4])
+//-------------------------------------------------------------------------
+//#CMD#//  gattc open #INTbuflen# #INTflags#
+//#CMD#//  gattc close
+//#CMD#//  gattc svc first #INTconnHandle# #INTstartAttrHandle# #INTsvcUuidHandle#
+//#CMD#//  gattc svc next #INTconnHandle#
+//#CMD#//  gattc char first #INTconnHandle# #INTuuidHandle# #INTsvcStartAttrHandle# #INTsvcEndAttrHandle#
+//#CMD#//  gattc char next #INTconnHandle#
+//#CMD#//  gattc desc first #INTconnHandle# #INTuuidHandle# #INTcharStartAttrHandle#
+//#CMD#//  gattc desc next #INTconnHandle#
+//#CMD#//  gattc findchar #INTconnHandle# #INTsvcUuidHandle# #INTsvcIndex# #INTcharUuidHandle# #INTcharIndex#
+//#CMD#//  gattc finddesc #INTconnHandle# #INTsvcUuidHandle# #INTsvcIndex# #INTcharUuidHandle# #INTcharIndex# #INTdescUuidHandle# #INTdescIndex#
+//#CMD#//  gattc tablemap #INTconnHandle#
+//#CMD#//  gattc read #INTconnHandle# #INTattrHandle# #INToffset#
+//#CMD#//  gattc write #INTconnHandle# #INTattrHandle# #HEXdata#
+//#CMD#//  gattc write$ #INTconnHandle# #INTattrHandle# #STRdata#
+//#CMD#//  gattc writecmd #INTconnHandle# #INTattrHandle# #HEXdata#
+//#CMD#//  gattc writecmd$ #INTconnHandle# #INTattrHandle# #STRdata#
+//-------------------------------------------------------------------------
+function _Gattc()  
+  dim cmdid
+  tlen = ExtractStrToken(urtcmd$,tkn$)
+  if tlen == 0 then
+    exitfunc 5
+  endif
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  if strcmp(tkn$,"open")==0 then
+    //extract 2 (#INTbuflen# #INTflags#) and store starting at i[1]
+    rc = ExtractIntTokens(urtcmd$,1,2)
+    if rc != 0 then
+      exitfunc rc
+    endif
+    exitfunc BleGattcOpen(i[1],i[2])
+  endif
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  if strcmp(tkn$,"close")==0 then
+    //no parms to extract
+    BleGattcClose()
+    exitfunc 0
+  endif
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  if strcmp(tkn$,"svc")==0 then
+    if gcState!=0 then
+      exitfunc 8
+    endif
+    tlen = ExtractStrToken(urtcmd$,tkn$)
+    if tlen == 0 then
+      exitfunc 5
+    endif  
+    if strcmp(tkn$,"first")==0 then
+      //extract 3 (#INTconnHandle# #INTstartAttrHandle# #INTsvcUuidHandle#) and store starting at i[1]
+      rc = ExtractIntTokens(urtcmd$,1,3)
+      if rc != 0 then
+        exitfunc rc
+      endif
+      exitfunc BleDiscServiceFirst(hc[i[1]],i[2],i[3])
+    endif
+    if strcmp(tkn$,"next")==0 then
+      //extract 1 (#INTconnHandle#) and store starting at i[1]
+      rc = ExtractIntTokens(urtcmd$,1,1)
+      if rc != 0 then
+        exitfunc rc
+      endif
+      exitfunc BleDiscServiceNext(hc[i[1]])
+    endif
+  endif
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  if strcmp(tkn$,"char")==0 then
+    if gcState!=0 then
+      exitfunc 8
+    endif
+    tlen = ExtractStrToken(urtcmd$,tkn$)
+    if tlen == 0 then
+      exitfunc 5
+    endif  
+    if strcmp(tkn$,"first")==0 then
+      //extract 4 (#INTconnHandle# #INTuuidHandle# #INTsvcStartAttrHandle# #INTsvcEndAttrHandle#) and store starting at i[1]
+      rc = ExtractIntTokens(urtcmd$,1,4)
+      if rc != 0 then
+        exitfunc rc
+      endif
+      exitfunc BleDiscCharFirst(hc[i[1]],i[2],i[3],i[4])
+    endif
+    if strcmp(tkn$,"next")==0 then
+      //extract 1 (#INTconnHandle#) and store starting at i[1]
+      rc = ExtractIntTokens(urtcmd$,1,1)
+      if rc != 0 then
+        exitfunc rc
+      endif
+      exitfunc BleDiscCharNext(hc[i[1]])
+    endif
+  endif
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  if strcmp(tkn$,"desc")==0 then
+    if gcState!=0 then
+      exitfunc 8
+    endif
+    tlen = ExtractStrToken(urtcmd$,tkn$)
+    if tlen == 0 then
+      exitfunc 5
+    endif  
+    if strcmp(tkn$,"first")==0 then
+      //extract 3 (#INTconnHandle# #INTuuidHandle# #INTcharStartAttrHandle#) and store starting at i[1]
+      rc = ExtractIntTokens(urtcmd$,1,3)
+      if rc != 0 then
+        exitfunc rc
+      endif
+      exitfunc BleDiscDescFirst(hc[i[1]],i[2],i[3])
+    endif
+    if strcmp(tkn$,"next")==0 then
+      //extract 1 (#INTconnHandle#) and store starting at i[1]
+      rc = ExtractIntTokens(urtcmd$,1,1)
+      if rc != 0 then
+        exitfunc rc
+      endif
+      exitfunc BleDiscDescNext(hc[i[1]])
+    endif
+  endif
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  if strcmp(tkn$,"findchar")==0 then
+    //extract 5 (#INTconnHandle# #INTsvcUuidHandle# #INTsvcIndex# #INTcharUuidHandle# #INTcharIndex#) and store starting at i[1]
+    rc = ExtractIntTokens(urtcmd$,1,5)
+    if rc != 0 then
+      exitfunc rc
+    endif
+    exitfunc BleGattcFindChar(hc[i[1]],i[2],i[3],i[4],i[5])
+  endif
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  if strcmp(tkn$,"finddesc")==0 then
+    //extract 7 (#INTconnHandle# #INTsvcUuidHandle# #INTsvcIndex# #INTcharUuidHandle# #INTcharIndex# #INTdescUuidHandle# #INTdescIndex#) and store starting at i[1]
+    rc = ExtractIntTokens(urtcmd$,1,7)
+    if rc != 0 then
+      exitfunc rc
+    endif
+    exitfunc BleGattcFindDesc(hc[i[1]],i[2],i[3],i[4],i[5],i[6],i[7])
+  endif
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  if strcmp(tkn$,"tablemap")==0 then
+    if gcState!=0 then
+      exitfunc 8
+    endif
+    //extract 1 (#INTconnHandle#) and store starting at i[1]
+    rc = ExtractIntTokens(urtcmd$,1,1)
+    if rc != 0 then
+      exitfunc rc
+    endif
+    exitfunc InitiateTableMap(hc[i[1]])
+  endif
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  if strcmp(tkn$,"read")==0 then
+    //extract 3 (#INTconnHandle# #INTattrHandle# #INToffset#) and store starting at i[1]
+    rc = ExtractIntTokens(urtcmd$,1,3)
+    if rc != 0 then
+      exitfunc rc
+    endif
+    exitfunc BleGattcRead(hc[i[1]],i[2],i[3])
+  endif
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  cmdid=0
+  if strcmp(tkn$,"write")==0 then
+    cmdid=1
+  endif
+  if strcmp(tkn$,"write$")==0 then
+    cmdid=2
+  endif
+  if cmdId != 0 then
+    //extract 3 (#INTconnHandle# #INTattrHandle# #HEXdata#) and store starting at i[1]
+    rc = ExtractIntTokens(urtcmd$,1,2)
+    if rc != 0 then
+      exitfunc rc
+    endif
+    if cmdid==1 then
+      //extract 1 (#HEXdata#) and store starting at s$[1]
+      tlen = ExtractStrToken(urtcmd$,s$[1])
+      if tlen == 0 then
+        exitfunc 5
+      endif
+      s$[1]=StrDehexize$(s$[1])
+      tlen = strlen(s$[1])
+    else
+      //extract 1 (#STRdata#) and store starting at s$[1]
+      tlen = ExtractStrToken(urtcmd$,s$[1])
+    endif
+    if tlen<1  then
+      exitfunc 5
+    endif    
+    exitfunc BleGattcWrite(hc[i[1]],i[2],s$[1])
+  endif
+  cmdid=0
+  if strcmp(tkn$,"write")==0 then
+    cmdid=0x01
+  endif
+  if strcmp(tkn$,"write$")==0 then
+    cmdid=0x02
+  endif
+  if strcmp(tkn$,"writecmd")==0 then
+    cmdid=0x11
+  endif
+  if strcmp(tkn$,"writecmd$")==0 then
+    cmdid=0x12
+  endif
+  if cmdId != 0 then
+    //extract 3 (#INTconnHandle# #INTattrHandle# #HEXdata#) and store starting at i[1]
+    rc = ExtractIntTokens(urtcmd$,1,2)
+    if rc != 0 then
+      exitfunc rc
+    endif
+    if (cmdid & 0xF)==1 then
+      //extract 1 (#HEXdata#) and store starting at s$[1]
+      tlen = ExtractStrToken(urtcmd$,s$[1])
+      if tlen == 0 then
+        exitfunc 5
+      endif
+      s$[1]=StrDehexize$(s$[1])
+      tlen = strlen(s$[1])
+    else
+      //extract 1 (#STRdata#) and store starting at s$[1]
+      tlen = ExtractStrToken(urtcmd$,s$[1])
+    endif
+    if tlen<1  then
+      exitfunc 5
+    endif    
+    if (cmdid & 0xF0)==0 then
+      exitfunc BleGattcWrite(hc[i[1]],i[2],s$[1])
+    else
+      exitfunc BleGattcWriteCmd(hc[i[1]],i[2],s$[1])
+    endif
+  endif
+endfunc 5
+
 
 //==============================================================================
 function OnUartCmd() as integer
@@ -519,6 +748,9 @@ function OnUartCmd() as integer
 
     elseif strcmp(tkn$,"ble_connect")==0 then
       rc = _Connect()
+	  
+	elseif strcmp(tkn$,"gattc")==0 then
+	  rc = _Gattc()
     	  
     elseif strcmp(tkn$,"volts")==0 then
       inputVoltage_mV = ReadPwrSupplyMv()
@@ -928,7 +1160,7 @@ endfunc 1
 //==============================================================================
 function HandlerAttrWrite(hConn,aHndl,nSts) as integer
     print "\nEVATTRWRITE(hConn=";integer.h' hConn;",handle=";aHndl;",status=";nSts;")"
-endfunc 0
+endfunc 1
 
 //==============================================================================
 //==============================================================================
