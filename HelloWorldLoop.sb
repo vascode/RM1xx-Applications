@@ -1,0 +1,31 @@
+//******************************************************************************
+// Laird (c) 2016
+//
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// +++++                                                                      ++
+// +++++  When UwTerminal downloads the app it will store it as a filenname   ++
+// +++++  which consists of all characters up to the first . and excluding it ++
+// +++++                                                                      ++
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+//
+// A simple "Hello World" application that prints a string to the UART output
+// every 500 ms.
+//
+
+function HandlerTimer0()
+// Just return 0 so we pass through the next waitevent
+endfunc 0
+
+// Sleep for ms milliseconds
+sub Sleep(ms)
+// Start Timer 0 as a one-shot timer
+    TIMERSTART(0,ms,0)
+endsub
+
+onevent EVTMR0 call HandlerTimer0
+
+while 1
+	print "Hello world\n"
+    sleep(500)
+    waitevent
+endwhile
