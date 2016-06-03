@@ -14,7 +14,7 @@
 // Definitions
 //******************************************************************************
 #include "RM1xx-defs.h"
-#include "ble.sblib"
+#include "lib/ble.sblib"
 
         //Set this to 0 to disable all debugging messages
 #define ENABLE_DEBUG_PRINTS                  1
