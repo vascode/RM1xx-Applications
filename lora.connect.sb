@@ -202,6 +202,9 @@ rc=StrSetChr(data$,Pressure,2)
 rc=StrSetChr(data$,Battery,7)
 rc=StrSetChr(data$,Temperature,4)
 
+// Join by personalisation
+//rc = LORAMACJoin(0)
+// OTAA
 rc = LORAMACJoin(1)
 
 WAITEVENT
