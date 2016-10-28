@@ -42,17 +42,23 @@
 #define LORAMAC_OPT_DOWNLINK_COUNTER        12 //RO - The downlink packet count
 #define LORAMAC_OPT_UPLINK_COUNTER          13 //RO - The uplink packet count
 #define LORAMAC_OPT_SOURCE_VOLTAGE          14 //RO - The supply voltage in mV
-#define LORAMAC_OPT_915_HYBRID_MODE         15 //RW - Enable/Disable hybrid mode for 915 MHz band.
 #define LORAMAC_OPT_BIRTHDAY                16 //RO - Date of manufacturing for this device
 #define LORAMAC_OPT_ADR_ENABLE              17 //RW - Enable/Disable Adaptive Data Rate (ADR) 
 #define LORAMAC_OPT_CHANNELLIST             18 //RO - Lists all the enabled channels
 #define LORAMAC_OPT_CHANNELMASK             19 //RO - Outputs the Channel mask
 #define LORAMAC_OPT_NEXT_TX                 20 //RO - Time to next tx
-#define LORAMAC_OPT_TEMPERATURE             21 //RO - Temperature in degrees Celcius
+#define LORAMAC_OPT_TEMPERATURE             21 //RO - Temperature in degrees Celsius
 #define LORAMAC_OPT_TEMP_COMP_FACTOR        22 //RO - Temperature compensation factor - device specific
 #define LORAMAC_OPT_FREQ_ERROR              23 //RO - Frequency error (in Hertz) of the SX1272
 #define LORAMAC_OPT_FREQ_OFFSET             24 //RO - SX1272 Frequency offset calibrated for temperature
-#define LORAMAC_OPT_END                     LORAMAC_OPT_FREQ_OFFSET  // End of the option enumeration
+#define LORAMAC_OPT_MAX_RETRIES             25 //RW - Sets the maximum amount of times a packet can be transmitted without recevieing and acknowledgement
+#define LORAMAC_OPT_END                     LORAMAC_OPT_MAX_RETRIES  // End of the option enumeration
+
+// Private options not publicly documented
+#define LORAMAC_PRIVATE_OPT_START           100
+#define LORAMAC_OPT_DUTY_CYCLE_ENABLE       100 //RW - Enable/Disable the duty cycle checks
+#define LORAMAC_OPT_RX2_DEFAULT_DATARATE    101 //RW - Sets the RX2 window defautl datarate.  This is only to get around a bug in the Semtech website.
+#define LORAMAC_PRIVATE_OPT_END             LORAMAC_OPT_RX2_DEFAULT_DATARATE
 
 // Special operating modes for development
 #define LORAMAC_OPT_TEST_MODE               200 //RW - Enables/disables Test mode
