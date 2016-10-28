@@ -114,6 +114,7 @@ endsub
 dim rc
 dim looprc
 dim stRsp$ as string        //Uart rx data is stored here
+dim str$
 
 dim ok$,er$,pr$
 
@@ -153,6 +154,10 @@ handle=0
 //******************************************************************************
 // Function and Subroutine definitions
 //******************************************************************************
+SUB PrintMsg(str$)
+	rc = UartWrite(str$)
+ENDSUB 
+
 //==============================================================================
 //release all connection handles
 //==============================================================================
@@ -317,29 +322,29 @@ endsub
 //-------------------------------------------------------------------------
 //-------------------------------------------------------------------------
 function _Help()
-  print "lora [options]\n"
-  print " join\n"
-  print " activate\n"
-  print " check loop\n"
-  print " check stop\n"
-  print " send STRING\n"
-  print " doze\n"
-  print " reset\n"
-  print " get NAME\n"
-  print " set NAME VALUE\n"
-  print "ble_scan [options]\n"
-  print " config NUM VALUE\n"  
-  print " start TIMEOUT FILTER\n"
-  print " stop\n"
-  print " abort\n"
-  print "ble_connect [options]\n"
-  print " cancel\n"
-  print " config NUM VALUE\n"
-  print " connparms HND MIN MAX TOUT LAT\n"
-  print " ADDR7 TOUT MIN MAX TOUT\n"
-  print "volts\n"
-  print "exit\n"
-  print "stop\n"
+  print "\nlora [options]"
+  print "\n join"
+  print "\n activate"
+  print "\n check loop"
+  print "\n check stop"
+  print "\n send STRING"
+  print "\n doze"
+  print "\n reset"
+  print "\n get NAMEn"
+  print "\n set NAME VALUE"
+  print "\nble_scan [options]"
+  print "\n config NUM VALUE"  
+  print "\n start TIMEOUT FILTER"
+  print "\n stop"
+  print "\n abort"
+  print "\nble_connect [options]"
+  print "\n cancel"
+  print "\n config NUM VALUE"
+  print "\n connparms HND MIN MAX TOUT LAT"
+  print "\n ADDR7 TOUT MIN MAX TOUT"
+  print "\nvolts"
+  print "\nexit"
+  print "\nstop"
 endfunc 0
 //-------------------------------------------------------------------------
 //#CMD#// lora update param$   #INTvalue# 
@@ -371,11 +376,11 @@ function _Lora()
 		tlen = ExtractStrToken(urtcmd$,tkn$)
 		if tlen != 0 then
 			if strcmp(tkn$,"loop")==0 then
-				print "Beginning Link Check loop\n"
+				print "\nBeginning Link Check loop"
 				linkCheckLoop = 1
 			endif
 			if strcmp(tkn$,"stop")==0 then
-				print "Stopping Link Check loop\n"
+				print "\nStopping Link Check loop"
 				linkCheckLoop = 0
 			endif
 		endif
@@ -424,7 +429,15 @@ function _Lora()
     rc = ExtractStrToken(urtcmd$,stringVal$)
     rc = LORAMACSetOption(reg, stringVal$)
     exitfunc rc
-  endif
+	endif
+
+	if strcmp(tkn$,"debug")==0 then
+		rc = ExtractIntTokens(urtcmd$,0,3)
+		if rc == 0 then
+			rc = LORAMACSetDebug(i[0],i[1],i[2])
+		endif
+		exitfunc rc
+	endif
 	
  endfunc 5
 //-------------------------------------------------------------------------
@@ -875,7 +888,7 @@ FUNCTION HandlerAdvRpt()
 				TmpStr2$ = ""
 				SPRINT #TmpStr2$,INTEGER.H'TmpVal
 				TmpStr2$ = RemoveZeros(TmpStr2$)
-				PRINT "  Length: ";strlen(TmpStr$);", Type: 0x";TmpStr2$;", Value: ";STRHEXIZE$(TmpStr$);"\n"
+				PRINT "\n  Length: ";strlen(TmpStr$);", Type: 0x";TmpStr2$;", Value: ";STRHEXIZE$(TmpStr$)
 			endif
 			TmpVal = TmpVal+1
 		endwhile
@@ -923,7 +936,7 @@ endfunc 1
 '// This handler is called when there is a LoRa TX Complete event
 '//==============================================================================
 function HandlerLoRaTxComp() as integer
-	print "LoRa TX Complete Event\n"
+	print "\nLoRa TX Complete Event"
 	if linkCheckLoop>0 then
 		rc=LORAMACLinkCheck()
 	endif
@@ -933,46 +946,46 @@ endfunc 1
 '// This handler is called when there is a LoRa RX Complete event
 '//==============================================================================
 function HandlerLoRaRxComp() as integer
-	print "LoRa RX Complete Event\n"
+	print "\nLoRa RX Complete Event"
 endfunc 1
 
 '//==============================================================================
 '// This handler is called when the LoRa Join procedure starts
 '//==============================================================================
 function HandlerLoRaJoining() as integer
-	print "Attempting to join the LoRa network\n"
+	print "\nAttempting to join the LoRa network"
 endfunc 1
 
 '//==============================================================================
 '// This handler is called when there is a LoRa Join Success Complete event
 '//==============================================================================
 function HandlerLoRaJoined() as integer
-	print "Successfully joined the LoRa network\n"
+	print "\nSuccessfully joined the LoRa network"
 endfunc 1
 
 function HandlerLoRaJoinFailed() as integer
-	print "Failed to join the LoRa network\n"
+	print "\nFailed to join the LoRa network"
 endfunc 1
 function HandlerLoRaTxTimeout() as integer
-	print "LoRa TX Timeout\n"
+	print "\nLoRa TX Timeout"
 endfunc 1
 function HandlerLoRaRxTimeout() as integer
-	print "LoRa RX Timeout\n"
+	print "\nLoRa RX Timeout"
     if linkCheckLoop>0 then
 		rc=LORAMACLinkCheck()
 	endif
 endfunc 1
 function HandlerLoRaRxError() as integer
-	print "LoRa RX Error\n"
+	print "\nLoRa RX Error"
 endfunc 1
-
 
 //==============================================================================
 // This handler is called when a Link Check Response is received
 //==============================================================================
 function HandlerLoRaLinkCheckResponse(BYVAL nMargin AS INTEGER, BYVAL nGwCnt AS INTEGER) as integer
-	print "Link Check Response: Margin = ";nMargin;"dB   Gateway Count = ";nGwCnt;"\n"
+	print "\nLink Check Response: Margin = ";nMargin;"dB   Gateway Count = ";nGwCnt;""
 endfunc 1
+
 //==============================================================================
 // This handler is called when downlink data is received from the gateway
 //==============================================================================
@@ -981,7 +994,31 @@ function HandlerLoRaRxData() as integer
 	dim nRSSI,nPort,nSNR
 	
 	rc = LORAMACRxData(data$, nRSSI, nPort, nSNR)	
-	print "LoRa Received downstream data on port ";nPort;"\nRSSI: ";nRSSI;"   SNR: ";nSNR;"\n";data$;"\n"
+	print "\nLoRa Received downstream data on port ";nPort;"\nRSSI: ";nRSSI;"   SNR: ";nSNR;"\n";data$;""
+endfunc 1
+
+//==============================================================================
+// This handler is called when Teh TxDone signal has been recevied in the module
+//==============================================================================
+function HandlerLoRaTxDone() As Integer
+	str$ = "\nTx Done"
+	PrintMsg(str$)
+endfunc 1
+
+//==============================================================================
+// This handler is called an RxWindow has faied to revceive a sync pulse
+//==============================================================================
+function HandlerLoRaNoSync() As Integer
+	str$ = "\nNo Sync pulse"
+	PrintMsg(str$)
+endfunc 1
+
+//==============================================================================
+// This handler is called when An ADR command has been receive as part of a downlink.
+//==============================================================================
+function HandlerLoRaAdr() As Integer
+	str$ = "\nAdr received"
+	PrintMsg(str$)
 endfunc 1
 
 #define BLE_EVBLEMSGID_CONNECT                        0
@@ -1071,7 +1108,7 @@ endfunc 1
 //handler to service button 0 pressed
 //==============================================================================
 FUNCTION HndlrBtn1Pr() AS INTEGER
-	print "button 1 pressed\n"
+	print "\nbutton 1 pressed"
     //just exit and stop waiting for events
 ENDFUNC 0
 
@@ -1237,17 +1274,20 @@ OnEvent  EVFINDCHAR               call HandlerFindChar
 OnEvent  EVFINDDESC               call HandlerFindDesc
 OnEvent  EVATTRWRITE              call HandlerAttrWrite
 OnEvent  EVATTRREAD               call HandlerAttrRead
-OnEvent  EVATTRNOTIFY			  call HandlerAttrNtfyCmd
+OnEvent  EVATTRNOTIFY							call HandlerAttrNtfyCmd
 
 OnEvent  EVLORAMACTXCOMPLETE      call HandlerLoRaTxComp
 OnEvent  EVLORAMACRXCOMPLETE      call HandlerLoRaRxComp
 OnEvent  EVLORAMACJOINING         call HandlerLoRaJoining
 OnEvent  EVLORAMACJOINED          call HandlerLoRaJoined
 OnEvent  EVLORAMACJOINFAILED      call HandlerLoRaJoinFailed
-OnEvent  EVLORAMACTXTIMEOUT		  call HandlerLoRaTxTimeout
-OnEvent  EVLORAMACRXTIMEOUT		  call HandlerLoRaRxTimeout
-OnEvent  EVLORAMACRXERROR		  call HandlerLoRaRxError
+OnEvent  EVLORAMACTXTIMEOUT				call HandlerLoRaTxTimeout
+OnEvent  EVLORAMACRXTIMEOUT				call HandlerLoRaRxTimeout
+OnEvent  EVLORAMACRXERROR					call HandlerLoRaRxError
 OnEvent  EVLORAMACRXDATA          call HandlerLoRaRxData
+OnEvent  EVLORAMACTXDONE					CALL HandlerLoRaTxDone
+OnEvent  EVLORAMACNOSYNC					CALL HandlerLoRaNoSync
+OnEvent  EVLORAMACADR							CALL HandlerLoRaAdr
 
 OnEvent EVLORAMACLINKCHECKRESPMSG call HandlerLoRaLinkCheckResponse
 
