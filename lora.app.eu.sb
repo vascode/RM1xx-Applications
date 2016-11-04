@@ -21,7 +21,7 @@ dim numnosync
 dim packettype
 
 SUB PrintMsg(str$)
-	rc = UartWrite(str$)
+	print str$
 ENDSUB 
 
 
