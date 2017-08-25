@@ -1,0 +1,150 @@
+//******************************************************************************
+// Copyright (c) 2017, Adam Pierce
+// Modified by Laird
+//
+// Permission to use, copy, modify, and/or distribute this software for any
+// purpose with or without fee is hereby granted, provided that the above
+// copyright notice and this permission notice appear in all copies.
+//
+// THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+// WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+// MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
+// SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+// WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+// ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR
+// IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+//
+// SPDX-License-Identifier:ISC
+//
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// +++++                                                                      ++
+// +++++  When UwTerminal downloads the app it will store it as a filename    ++
+// +++++  which consists of all characters up to the first . and excluding it ++
+// +++++                                                                      ++
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+//
+// MCP79410 RTC sample application, requires the RTC I2C pins to be connected
+// to the RM1xx (SIO_29 - SCL, SIO_30 - SDA) with pull-up resistors on both pins
+// (~2.2K Ohm).
+// Optionally connect the RTC alarm pin to SIO_4 or another pin and change the
+// define below.
+//
+// Port of Sensorian RTC_RTCC Driver to smartBASIC
+// source: https://github.com/sensorian/sensorian-firmware
+//
+//******************************************************************************
+
+//******************************************************************************
+// Definitions
+//******************************************************************************
+#define AlarmPin 4
+
+//******************************************************************************
+// Includes
+//******************************************************************************
+#include "MCP79410.sblib"
+
+//******************************************************************************
+// Global Variable Declarations
+//******************************************************************************
+DIM gpiostate
+DIM rc
+DIM tsec
+DIM tmin
+DIM thour
+DIM tweekday
+DIM tdate
+DIM tmonth
+DIM tyear
+
+//******************************************************************************
+// Initialise Global Variable
+//******************************************************************************
+tsec     = 0
+tmin     = 0 
+thour    = 0
+tweekday = 0
+tdate    = 0
+tmonth   = 0 
+tyear    = 0
+
+//******************************************************************************
+// Function and Subroutine definitions
+//******************************************************************************
+FUNCTION HandlerUartRx() as integer
+    //Exit application
+ENDFUNC 0
+
+//==============================================================================
+//==============================================================================
+SUB ZeroPad(Fig)
+    //Pads the number with a 0 if the value is below 10
+    if (Fig < 10) then
+        print "0"
+    endif
+    print Fig
+ENDSUB
+
+//==============================================================================
+//==============================================================================
+FUNCTION GeneralTimerTick()
+    //Pass in the varibles to be set with the new date time data
+    RTC_GetTime(tsec, tmin, thour, tweekday, tdate, tmonth, tyear)
+    gpiostate = gpioread(AlarmPin) 
+    print "Alarm Pin Status: ";gpiostate; "\n"
+
+    if gpiostate == 0 then
+        //Clear RTC interrupt
+        RTC_ClearInterrupt(0)
+    endif
+
+    //Output time/date with padding
+    ZeroPad(tdate)
+    print "/"
+    ZeroPad(tmonth)
+    print "/";tyear;" "
+    ZeroPad(thour)
+    print ":"
+    ZeroPad(tmin)
+    print ":"
+    ZeroPad(tsec)
+    print "\n"
+ENDFUNC 1
+
+//==============================================================================
+//==============================================================================
+FUNCTION StartUp()
+    //Initialise the RTC
+    RTC_Initialize()
+
+    //Set the date and time
+    RTC_SetTime(45, 59, 23, 3, 30, 8, 17)
+
+    //Setup the alarm pin 
+    rc = GpioSetFunc(AlarmPin, 1, 2)
+
+    //Set alarm time    
+    RTC_SetAlarmTime(0, 1, 0, 0, 0, 0, 0)
+    RTC_SetAlarmMatch(0, 0)
+
+    //Configure Alarm pin polarity as HIGH
+    RTC_SetAlarmMFPPol(0, 0)
+    RTC_SetMFP_Func(1)
+ENDFUNC 0
+
+//------------------------------------------------------------------------------
+// Enable synchronous event handlers
+//------------------------------------------------------------------------------
+ONEVENT EVUARTRX   CALL HandlerUartRx
+ONEVENT EVTMR0     CALL GeneralTimerTick
+
+//******************************************************************************
+// Equivalent to main() in C
+//******************************************************************************
+rc = StartUp()
+TimerStart(0,1000,1)
+
+//------------------------------------------------------------------------------
+// Wait for a synchronous event.
+//------------------------------------------------------------------------------
+WAITEVENT
