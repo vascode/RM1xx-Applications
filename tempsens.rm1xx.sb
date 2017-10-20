@@ -58,35 +58,28 @@
 
 //******************************************************************************
 
-
 #define TEMP_SENS_PIN 5
 
 dim rc
 dim tempC
 
-function HandlerTimer0()
-// Just return 0 so we pass through the next waitevent
-endfunc 0
+function TakeReading()
+    rc = GpioRead(TEMP_SENS_PIN)
+    tempC = ((19028992-36000*rc)/119706)
+    print tempC;"*C\n"
+endfunc 1
 
-// Sleep for ms milliseconds
-sub Sleep(ms)
-// Start Timer 0 as a one-shot timer
-    TIMERSTART(0,ms,0)
-endsub
-
-onevent EVTMR0 call HandlerTimer0
-
-rc=0
 //-------------------------------------------------------------
 // Configure the Temperature Sensor pin as an ANALOG INPUT
 //-------------------------------------------------------------
 rc=GpioSetFunc(TEMP_SENS_PIN,3,0x13)
 
-while 1
-    rc = GpioRead(TEMP_SENS_PIN)
-    tempC = ((19028992-36000*rc)/119706)
-    print tempC;"*C\n"
-    sleep(500)
-    waitevent
-endwhile
-    
+//Event handlers
+ONEVENT EVTMR0 CALL TakeReading
+
+//******************************************************************************
+// Equivalent to main() in C
+//******************************************************************************
+TimerStart(0,500,1)
+
+waitevent

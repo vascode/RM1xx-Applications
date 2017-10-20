@@ -53,12 +53,12 @@ dim wr$
 dim rd$
 
 function HandlerTimer0()
-// Just return 0 so we pass through the next waitevent
+    //Just return 0 so we pass through the next waitevent
 endfunc 0
 
-// Sleep for ms milliseconds
+//Sleep for ms milliseconds
 sub Sleep(ms)
-// Start Timer 0 as a one-shot timer
+    //Start Timer 0 as a one-shot timer
     TIMERSTART(0,ms,0)
     waitevent
 endsub
@@ -106,9 +106,9 @@ GpioWrite(SPI_CS_PIN,1)
 
 sub setLEDs(val)
     GpioWrite(SPI_CS_PIN,0)
-    // Write (opcode 0x40) PORT/GPIO Register (0x09)
+    //Write (opcode 0x40) PORT/GPIO Register (0x09)
     wr$="\40\09"
-    // Add the value that was passed in to the SPI command
+    //Add the value that was passed in to the SPI command
     rc=strsetchr(wr$,val,2)
     rc=SpiWrite(wr$)
     GpioWrite(SPI_CS_PIN,1)
@@ -128,16 +128,16 @@ endsub
 
 print "Press SW1/Button1 on the DVK to flash the LEDs\n"
 do
-// Read (opcode 0x41) PORT/GPIO Register (0x09)
+    //Read (opcode 0x41) PORT/GPIO Register (0x09)
     wr$="\41\09\00"
     GpioWrite(SPI_CS_PIN,0)
     rc=SpiReadWrite(wr$,rd$)
     GpioWrite(SPI_CS_PIN,1)
-    // The GPIO pin status comes back in the 3rd byte
+    //The GPIO pin status comes back in the 3rd byte
     rc=StrGetChr(rd$,2)
-    // Check if IO4 is grounded
+    //Check if IO4 is grounded
     if ((rc&0x10)==0) then
-        // the push button has been pressed
+        //The push button has been pressed
         strobeLEDs()
         sleep(10)
     endif

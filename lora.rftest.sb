@@ -1,18 +1,45 @@
+//******************************************************************************
+// Copyright (c) 2016-2017, Laird
+//
+// Permission to use, copy, modify, and/or distribute this software for any
+// purpose with or without fee is hereby granted, provided that the above
+// copyright notice and this permission notice appear in all copies.
+//
+// THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+// WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+// MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
+// SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+// WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+// ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR
+// IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+//
+// SPDX-License-Identifier:ISC
+//
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// +++++                                                                      ++
+// +++++  When UwTerminal downloads the app it will store it as a filename    ++
+// +++++  which consists of all characters up to the first . and excluding it ++
+// +++++                                                                      ++
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+//
+// This application allows for testing LoRa RF functionality
+//
+//******************************************************************************
 #include "RM1xx-defs.h"
 
-        // size of i[]
+        //Size of i[]
 #define NUM_OF_I_PARAMS                     (8)
-        // size of s$[] and must be at least 8 elements for BleSvcRegDevInfo()     
-#define NUM_OF_S_PARAMS                     (8)
+        //Size of s$[] and must be at least 8 elements for BleSvcRegDevInfo()
+#define NUM_OF_S_PARAMS                     (4)
 
 
 Dim rc
 Dim Count
 dim ok$,er$,pr$
 dim tlen,tkn$
-dim i[NUM_OF_I_PARAMS]      // index 0 used for return values
-dim s$[NUM_OF_S_PARAMS]    // must be at least 8 elements for BleSvcRegDevInfo()
-dim urtcmd$                 //cmd line from uart
+dim i[NUM_OF_I_PARAMS]     //Index 0 used for return values
+dim s$[NUM_OF_S_PARAMS]    //Must be at least 8 elements for BleSvcRegDevInfo()
+dim urtcmd$                //CMD line from uart
 dim urts
 dim stRsp$
 dim str$
@@ -28,111 +55,125 @@ dim val
 // Prints 
 //==============================================================================
 SUB PrintMsg(str$)
-	rc = UartWrite(str$)
+    rc = UartWrite(str$)
 ENDSUB 
 
 SUB PrintLine()
-	str$ = "\n---------------------------------------------------------\n\n"
-	PrintMsg(str$)
+    str$ = "\n---------------------------------------------------------\n\n"
+    PrintMsg(str$)
 ENDSUB
 
 SUB PrintSendParameters()
-	rc = LORAMACGetOption(LORAMAC_OPT_DATA_RATE, Datarate$)
-	rc = LORAMACGetOption(LORAMAC_OPT_TX_POWER, Power$)
-	sprint #str$,"\npower: ";Power$
-	PrintMsg(str$)
-	sprint #str$,"\ndatarate: ";Datarate$
-	PrintMsg(str$)
+    rc = LORAMACGetOption(LORAMAC_OPT_DATA_RATE, Datarate$)
+    rc = LORAMACGetOption(LORAMAC_OPT_TX_POWER, Power$)
+    sprint #str$,"\npower: ";Power$
+    PrintMsg(str$)
+    sprint #str$,"\ndatarate: ";Datarate$
+    PrintMsg(str$)
 ENDSUB
 
 SUB PrintNextTxTime()
-	rc = LORAMACGetOption(LORAMAC_OPT_NEXT_TX, strResp$)
-	sprint #str$,"\n";strResp$;
-	PrintMsg(str$)
+    rc = LORAMACGetOption(LORAMAC_OPT_NEXT_TX, strResp$)
+    sprint #str$,"\n";strResp$;
+    PrintMsg(str$)
 ENDSUB
 
-//==============================================================================
+//-------------------------------------------------------------------------
 //-------------------------------------------------------------------------
 function ExtractIntTokens(u$,stIdx,num)
-  while num>0
-    tlen = ExtractIntToken(u$,i[stIdx])
-    if tlen == 0 then
-      exitfunc 4
-    endif
-    num=num-1
-    stIdx = stIdx+1
-  endwhile
+    while num>0
+        tlen = ExtractIntToken(u$,i[stIdx])
+        if tlen == 0 then
+            exitfunc 4
+        endif
+        num=num-1
+        stIdx = stIdx+1
+    endwhile
 endfunc 0
 
 //-------------------------------------------------------------------------
 //-------------------------------------------------------------------------
 function ExtractStrTokens(u$ as string,byref stIdx as integer,num as integer)
-  while num>0
-    tlen = ExtractStrToken(u$,s$[stIdx])
-    if tlen == 0 then
-      exitfunc 0
-    endif
-    num=num-1
-    stIdx = stIdx+1
-  endwhile
+    while num>0
+        tlen = ExtractStrToken(u$,s$[stIdx])
+        if tlen == 0 then
+            exitfunc 0
+        endif
+        num=num-1
+        stIdx = stIdx+1
+    endwhile
 endfunc 0
 
 FUNCTION LoramacJoining() As Integer
- 	str$ = "\nJoining\n"
-	PrintMsg(str$)
+    str$ = "\nJoining\n"
+    PrintMsg(str$)
 endfunc 1
 
 FUNCTION LoramacJoined() As Integer
-	str$ = "\nJoined\n"
- 	PrintMsg(str$)
-	str$ = "0"
-	rc = LoramacSetOption(LORAMAC_OPT_ADR_ENABLE,str$)
-endfunc 1
-
-FUNCTION LoramacJoinFailed() As Integer
-	rc = LORAMACJoin(1)
- 	sprint #str$,"\nJoin Failed\n"
- 	PrintMsg(str$)
+    str$ = "\nJoined\n"
+    PrintMsg(str$)
+    str$ = "0"
+    rc = LoramacSetOption(LORAMAC_OPT_ADR_ENABLE,str$)
 endfunc 1
 
 FUNCTION LoramacTxComplete() As Integer
-	dim datastr$ as string
-	dim rssi as integer
-	dim port as integer
-	dim snr as integer
-	rc = LORAMACRxData(datastr$,rssi,port,snr)
- 	str$ = "\nTx sequence completed"
- 	PrintMsg(str$)
-	sprint #str$,"\nrssi ";rssi
- 	PrintMsg(str$)
-	sprint #str$,"\nsnr ";snr;"\n"
- 	PrintMsg(str$)
-	PrintLine()
+    str$ = "\nTx sequence completed"
+    PrintMsg(str$)
+endfunc 1
+
+FUNCTION HandlerRxData() As Integer
+    dim datastr$ as string
+    dim rssi$ as integer
+    dim port$ as integer
+    dim snr$ as integer
+    dim framepending$ as integer
+    dim packettype$ as integer
+    rc = LORAMACRxData(datastr$,rssi$,port$,snr$,framepending$,packettype$)
+    sprint #str$,"\n\22";datastr$;"\22 received from the gateway"
+    Print str$
+    sprint #str$,"\nReceived packet rssi: ";rssi$;" snr: ";snr$;" frames pending: ";framepending$;" packet type: ";packettype$
+    Print str$
 endfunc 1
 
 FUNCTION LoramacRxTimeout() As Integer
- 	str$ = "\nRx Timeout\n"
-	PrintMsg(str$)
-	PrintLine()
+    str$ = "\nRx Timeout\n"
+    PrintMsg(str$)
+    PrintLine()
 endfunc 1
 
 FUNCTION LoramacTxTimeout() As Integer
- 	str$ = "\nTx Timeout\n"
-	PrintMsg(str$)
-	PrintLine()
+    str$ = "\nTx Timeout\n"
+    PrintMsg(str$)
+    PrintLine()
 endfunc 1
 
 FUNCTION LoramacRxError() As Integer
- 	str$ = "\nRx Error\n"
-	PrintMsg(str$)
-	PrintLine()
+    str$ = "\nRx Error\n"
+    PrintMsg(str$)
+    PrintLine()
 endfunc 1
 
 FUNCTION LoramacLinkResponse(Margin, Gateways) As Integer
-	sprint #str$,"\nMargin: ";Margin
-	PrintMsg(str$)
+    sprint #str$,"\nMargin: ";Margin
+    PrintMsg(str$)
 endfunc 1
 
+FUNCTION HandlerNextTx() As Integer
+    str$ = "\nNextTx"
+    PrintMsg(str$)
+endfunc 1
+
+//------------------------------------------------------------------------------
+// Uplnk/downlink sequence has completed - this is an amalgamation of the above events.
+// The flag indicates which of the above end of seqnece events triggered this event.
+// nexttime is the time to the next EVLORAMACNEXTTX  event.
+// For AU and US modules this will be 0 and it is safe to send the next packet.
+//------------------------------------------------------------------------------
+FUNCTION HandlerSequenceComplete(flag, nexttime) As Integer
+    Print  "\nSequence complete ";flag
+    Print  "\nNext time ",nexttime
+    PrintLine()
+endfunc 1
 
 //-------------------------------------------------------------------------
 //#CMD#// lora update param$   #INTvalue# 
@@ -144,167 +185,172 @@ endfunc 1
 //#CMD#// lora cancel #INThandle#
 //-------------------------------------------------------------------------
 function _Lora()
-  dim prAdr$ 
-	dim res
-	dim tkn$
-	dim type
-	dim inttok
-	dim strtok
+    dim prAdr$
+    dim res
+    dim tkn$
+    dim type
+    dim inttok
+    dim strtok
 
-  tlen = ExtractStrToken(urtcmd$,tkn$)
-  if tlen == 0 then
-    exitfunc 5
-  endif
+    tlen = ExtractStrToken(urtcmd$,tkn$)
+    if tlen == 0 then
+        exitfunc 5
+    endif
 
-  if strcmp(tkn$,"join")==0 then
-		rc = ExtractIntToken(urtcmd$,val)
-		rc = LORAMACJoin(val)
-		sprint #str$,"\nJoining ";integer.h' rc
-		if rc == 0 && val == 1 then
-			reg = 20
-			rc = LORAMACGetOption(reg, str$)
-			sprint #str$,"\n";str$
-		endif
-		PrintMsg(str$)
-		exitfunc 0
-	endif
-	
-	if strcmp (tkn$,"send")==0 then
-		strtok = 0
-		rc = ExtractStrTokens(urtcmd$,strtok,2)
-		if strtok == 2 then
-		  Location$ = s$[0]
-			rc = ExtractIntToken(s$[1],type)
-		elseif strtok == 1 then
-			Location$ = ""
-			rc = ExtractIntToken(s$[0],type)
-		else
-			exitfunc 99
-		endif
-		PrintSendParameters()
-		rc = LORAMACTxData(2,Location$, type)
-		if  rc == 0 then
-			PrintNextTxTime()
-		endif
-		exitfunc 0
-	endif
+    if strcmp(tkn$,"join")==0 then
+        rc = ExtractIntToken(urtcmd$,val)
+        rc = LORAMACJoin(val)
+        sprint #str$,"\nJoining ";integer.h' rc
+        if rc == 0 && val == 1 then
+            reg = 20
+            rc = LORAMACGetOption(reg, str$)
+            sprint #str$,"\n";str$
+        endif
+        PrintMsg(str$)
+        exitfunc 0
+    endif
 
-  if strcmp(tkn$,"getopt")==0 then
-		rc = ExtractIntToken(urtcmd$,reg)
-		rc = LORAMACGetOption(reg, strResp$)
-		sprint #str$,"\n";strResp$
-		PrintMsg(str$)
-		exitfunc 0
-	endif
-	
-  if strcmp(tkn$,"link")==0 then
-		PrintSendParameters()
-		rc = LORAMACLinkCheck()
-		if  rc == 0 then
-			PrintNextTxTime()
-		endif
-		exitfunc 0
-	endif
-	
-	if strcmp(tkn$,"setpow")==0 then
-		rc = ExtractStrToken(urtcmd$,Power$)
-		exitfunc LORAMACSetOption(LORAMAC_OPT_TX_POWER, Power$)
-	endif
+    if strcmp (tkn$,"send")==0 then
+        strtok = 0
+        rc = ExtractStrTokens(urtcmd$,strtok,2)
+        if strtok == 2 then
+            Location$ = s$[0]
+            rc = ExtractIntToken(s$[1],type)
+        elseif strtok == 1 then
+            Location$ = ""
+            rc = ExtractIntToken(s$[0],type)
+        else
+            exitfunc 99
+        endif
+        PrintSendParameters()
+        rc = LORAMACTxData(2,Location$, type)
+        if  rc == 0 then
+            PrintNextTxTime()
+        endif
+        exitfunc 0
+    endif
 
-  if strcmp(tkn$,"setdr")==0 then
-		rc = ExtractStrToken(urtcmd$,Datarate$)
-		exitfunc LORAMACSetOption(LORAMAC_OPT_DATA_RATE, Datarate$)
-	endif
-	
-	if strcmp(tkn$,"getpow")==0 then
-		rc = LORAMACGetOption(LORAMAC_OPT_TX_POWER, str$)
-		sprint #str$,"\n";str$
-		PrintMsg(str$)
-		exitfunc 0
-	endif
+    if strcmp(tkn$,"getopt")==0 then
+        rc = ExtractIntToken(urtcmd$,reg)
+        rc = LORAMACGetOption(reg, strResp$)
+        sprint #str$,"\n";strResp$
+        PrintMsg(str$)
+        exitfunc 0
+    endif
 
-  if strcmp(tkn$,"getdr")==0 then
-		rc = LORAMACGetOption(LORAMAC_OPT_DATA_RATE, strResp$)
-		sprint #str$,"\n";strResp$
-		PrintMsg(str$)
-		exitfunc 0
-	endif
-	
-  if strcmp(tkn$,"setopt")==0 then
-		rc = ExtractIntToken(urtcmd$,reg)
-		tlen = ExtractStrToken(urtcmd$,tkn$)
-		if tlen != 0 then
-			rc = LORAMACSetOption(reg, tkn$)
-			print "\n";integer.h' rc
-			if rc == 0 then
-				sprint #str$,"\n";integer.h' rc;" ";tkn$
-			else
-				sprint #str$,"\n";integer.h' rc
-			endif
-			PrintMsg(str$)
-		endif
-		exitfunc 0
-	endif
-	
- endfunc 5
+    if strcmp(tkn$,"link")==0 then
+        PrintSendParameters()
+        rc = LORAMACLinkCheck()
+        if  rc == 0 then
+            PrintNextTxTime()
+        endif
+        exitfunc 0
+    endif
+
+    if strcmp(tkn$,"setpow")==0 then
+        rc = ExtractStrToken(urtcmd$,Power$)
+        exitfunc LORAMACSetOption(LORAMAC_OPT_TX_POWER, Power$)
+    endif
+
+    if strcmp(tkn$,"setdr")==0 then
+        rc = ExtractStrToken(urtcmd$,Datarate$)
+        exitfunc LORAMACSetOption(LORAMAC_OPT_DATA_RATE, Datarate$)
+    endif
+
+    if strcmp(tkn$,"getpow")==0 then
+        rc = LORAMACGetOption(LORAMAC_OPT_TX_POWER, str$)
+        sprint #str$,"\n";str$
+        PrintMsg(str$)
+        exitfunc 0
+    endif
+
+    if strcmp(tkn$,"getdr")==0 then
+        rc = LORAMACGetOption(LORAMAC_OPT_DATA_RATE, strResp$)
+        sprint #str$,"\n";strResp$
+        PrintMsg(str$)
+        exitfunc 0
+    endif
+
+    if strcmp(tkn$,"setopt")==0 then
+        rc = ExtractIntToken(urtcmd$,reg)
+        tlen = ExtractStrToken(urtcmd$,tkn$)
+        if tlen != 0 then
+            rc = LORAMACSetOption(reg, tkn$)
+            print "\n";integer.h' rc
+            if rc == 0 then
+                sprint #str$,"\n";integer.h' rc;" ";tkn$
+            else
+                sprint #str$,"\n";integer.h' rc
+            endif
+            PrintMsg(str$)
+        endif
+        exitfunc 0
+    endif
+
+    //Enables/disables the debug option
+    if strcmp(tkn$,"debug")==0 then
+        rc = ExtractIntTokens(urtcmd$,0,3)
+        if rc == 0 then
+            rc = LORAMACSetDebug(i[0],i[1],i[2])
+        endif
+        exitfunc rc
+    endif
+endfunc 5
 
 //==============================================================================
 //==============================================================================
 function OnUartCmd() as integer
-  rc=1 //assume there is an error
-  tlen = ExtractStrToken(urtcmd$,tkn$) //get first token
-  if tlen == 0 then
-    rc=0
-  elseif tlen > 0 then
-    
-    if strcmp(tkn$,"lora")==0 then
-      rc = _Lora()
-			if rc != 0 then
-			  sprint #str$,"\n";integer.h' rc
-				PrintMsg(str$)
-			endif
-      
-    elseif (strcmp(tkn$,"exit")==0)||(strcmp(tkn$,"stop")==0) then
-      print "\nType..\nRESUME          to continue the application"
-      print "\n? VARNAME       to inspect a variable"    
-      print "\n= VARNAME VALUE to change a variable"    
-      stop 
-      rc=0
-    
+    rc=1 //assume there is an error
+    tlen = ExtractStrToken(urtcmd$,tkn$) //get first token
+    if tlen == 0 then
+        rc=0
+    elseif tlen > 0 then
+        if strcmp(tkn$,"lora")==0 then
+            rc = _Lora()
+            if rc != 0 then
+                sprint #str$,"\n";integer.h' rc
+                PrintMsg(str$)
+            endif
+        elseif (strcmp(tkn$,"exit")==0)||(strcmp(tkn$,"stop")==0) then
+            print "\nType..\nRESUME          to continue the application"
+            print "\n? VARNAME       to inspect a variable"
+            print "\n= VARNAME VALUE to change a variable"
+            stop 
+            rc=0
+        endif
     endif
-  endif
 endfunc 1
 
 
 //==============================================================================
 //==============================================================================
 function HandlerUartRxCmd() as integer
-  dim nMatch
-  
-  if urts < 0 then
-    //uart parser is suspended
-    exitfunc 1
-  endif
+    dim nMatch
 
-  //check if CR has been received
-  nMatch=UartReadMatch(stRsp$,13)
-  if nMatch!=0 then
-    //CR exists in the input buffer
-    urtcmd$ = strsplitleft$(stRsp$,nMatch)
-    exitfunc OnUartCmd()
-  endif
+    if urts < 0 then
+        //UART parser is suspended
+        exitfunc 1
+    endif
+
+    //Check if CR has been received
+    nMatch=UartReadMatch(stRsp$,13)
+    if nMatch!=0 then
+        //CR exists in the input buffer
+        urtcmd$ = strsplitleft$(stRsp$,nMatch)
+        exitfunc OnUartCmd()
+    endif
 endfunc 1
 
-ONEVENT EVLORAMACJOINING	CALL LoramacJoining
-ONEVENT EVLORAMACJOINED	CALL LoramacJoined
-ONEVENT EVLORAMACJOINFAILED	CALL LoramacJoinFailed
-ONEVENT EVLORAMACTXCOMPLETE	CALL LoramacTxComplete
+ONEVENT EVLORAMACJOINING    CALL LoramacJoining
+ONEVENT EVLORAMACJOINED    CALL LoramacJoined
+ONEVENT EVLORAMACTXCOMPLETE    CALL LoramacTxComplete
 ONEVENT EVLORAMACRXTIMEOUT CALL LoramacRxTimeout
 ONEVENT EVLORAMACTXTIMEOUT CALL LoramacTxTimeout
 ONEVENT EVLORAMACRXERROR CALL LoramacRxError
 ONEVENT EVLORAMACLINKCHECKRESPMSG CALL LoramacLinkResponse
 ONEVENT EVUARTRX CALL HandlerUartRxCmd
+ONEVENT EVLORAMACSEQUENCECOMPLETE CALL HandlerSequenceComplete
+ONEVENT EVLORAMACNEXTTX CALL HandlerNextTx
+ONEVENT EVLORAMACRXDATA CALL HandlerRxData
 
 WAITEVENT
-
-
