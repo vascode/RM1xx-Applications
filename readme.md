@@ -4,6 +4,10 @@ This repository contains example smartBASIC applications for the RM186 and RM191
 
 Some of these applications require the RM1xx-defs.h file located in the firmware release package. Please be sure to use the RM1xx.h file associated with the firmware loaded on the module. The firmware version can be checked at the smartBASIC command prompt with the "ATI 3" command.
 
+## Please Note:
+
+For simplicity reasons, some sample apps have been written without important features such as error handling or result code checking. However, when writing your applications, please ensure that result codes returned from the API functions are always checked to ensure that your applications are robust and error-free.
+
 ## Older firmwares
 
 The files in this repository are designed for use with the latest RM1xx firmware which at the time of writing is:
