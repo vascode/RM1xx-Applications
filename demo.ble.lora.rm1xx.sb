@@ -325,7 +325,7 @@ function HndlrAdvRpt()
             PRINT "\n"
 
             //Check if the array is too large
-            if (PrevAdCount > 6) then
+            if (PrevAdCount > 4) then
                 //Array too big - clear it
                 TmpVal = 0
                 while (TmpVal < 6)

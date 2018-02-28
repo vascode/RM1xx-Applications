@@ -153,7 +153,7 @@ dim handle
 dim conHndl
 dim linkCheckLoop            //Loop sending Link Check Request messages for debugging
 
-dim PrevAds$[6] //Previous adverts (size of 8 adverts)
+dim PrevAds$[6] //Previous adverts (size of 6 adverts)
 dim PrevAdCount : PrevAdCount = 0 //Number of previous adverts
 
 dim hc[NUM_OF_CONNS+1]      //Contains connection handles
