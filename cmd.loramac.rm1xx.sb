@@ -245,6 +245,24 @@ FUNCTION RemoveZeros(Data$) AS STRING
     ENDIF
 ENDFUNC TmpStr$
 
+//------------------------------------------------------------------------------
+// Strip "" from str$ if they exist
+//------------------------------------------------------------------------------
+sub TrimQuotes(str$)
+  dim len 
+  if strgetchr(str$,0)==0x22 then  //check for beginning "
+    len = strlen(str$)
+    if len > 2 then
+      if strgetchr(str$,(len-1))==0x22 then //check for ending "
+        str$ = mid$(str$,1,(len-2))
+      endif
+    elseif len == 2 then
+      str$=""
+    endif
+  endif
+endsub
+
+
 //==============================================================================
 //==============================================================================
 sub UartRsp(rsp as integer)
@@ -388,6 +406,8 @@ function _Lora()
         //#>lora send <data> <port> <confirm>
         rc = ExtractStrToken(urtcmd$, tkn$)
         rc = ExtractIntTokens(urtcmd$,1,2)
+        TrimQuotes(tkn$)
+	StrDeescape(tkn$)
         rc = LoramacQueryTxPossible(strlen(tkn$),currentsize,maxsize)
         if rc == 0 then
           Print "\ncurrent ";currentsize
